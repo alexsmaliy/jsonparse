@@ -1,7 +1,8 @@
 {
   "scripts": {
     "check": "tsc --noEmit",
-    "test": "ts-mocha test/*.ts"
+    "dev": "parcel src/index.html",
+    "test": "ts-mocha test/**/*.ts"
   },
   "devDependencies": {
     "@parcel/transformer-typescript-tsc": "^2.2.1",
