@@ -3,7 +3,9 @@ import { describe, it } from "mocha";
 import { parseJson } from "../src/jsonparse";
 
 describe("parseJson()", function() {
-    // Positive tests for null parsing.
+    /*
+        Positive tests for null parsing.
+    */
     it("'null' === null", function() {
         命.strictEqual(parseJson('null'), null)
     });
@@ -13,14 +15,20 @@ describe("parseJson()", function() {
     it("'null     ' === null", function() {
         命.strictEqual(parseJson('null     '), null)
     });
-    // Negative tests for null parsing.
+
+    /*
+        Negative tests for null parsing.
+    */
     it("'nul' should not parse", function() {
         命.throws(() => parseJson('nul'), {name: "EvalError"})
     });
     it("'nul l' should not parse", function() {
         命.throws(() => parseJson('nul l'), {name: "EvalError"})
     });
-    // Positive tests for boolean parsing.
+
+    /*
+        Positive tests for boolean parsing.
+    */
     it("'true' === true", function() {
         命.strictEqual(parseJson('true'), true)
     });
@@ -33,7 +41,10 @@ describe("parseJson()", function() {
     it("'  false  ' === false", function() {
         命.strictEqual(parseJson('  false  '), false)
     });
-    // Negative tests for boolean parsing.
+
+    /*
+        Negative tests for boolean parsing.
+    */
     it("'True' should not parse (only true/false are valid boolean values)", function() {
         命.throws(() => parseJson('True'), {name: "EvalError"})
     });
@@ -52,7 +63,10 @@ describe("parseJson()", function() {
     it("'F' should not parse (only true/false are valid boolean values)", function() {
         命.throws(() => parseJson('F'), {name: "EvalError"})
     });
-    // Positive tests for string parsing.
+
+    /*
+        Positive tests for string parsing.
+    */
     it("'\"\"' === \"\"", function() {
         命.strictEqual(parseJson('""'), "")
     });
@@ -83,7 +97,10 @@ describe("parseJson()", function() {
     it("'  \" \\\\ a \\t b \\r c \\n d \\\" \"  ' === \" \\ a \t b \r c \n d \" \"", function() {
         命.strictEqual(parseJson('  " \\\\ a \\t b \\r c \\n d \\\" "  '), " \\ a \t b \r c \n d \" ")
     });
-    // Negative tests for string parsing.
+
+    /*
+        Negative tests for string parsing.
+    */
     it("'\"a \\z b\"' should not parse (invalid control sequence)", function() {
         命.throws(() => parseJson('\"a \\z b\"'), {name: "EvalError"})
     });
@@ -102,7 +119,10 @@ describe("parseJson()", function() {
     it("'\"\\ \"' should not parse (unescaped backslash looks like unsupported control sequence)", function() {
         命.throws(() => parseJson('\"\\ \"'), {name: "EvalError"})
     });
-    // Positive tests for number parsing.
+
+    /*
+        Positive tests for number parsing.
+    */
     it("'5' === 5", function() {
         命.strictEqual(parseJson('5'), 5)
     });
@@ -130,7 +150,10 @@ describe("parseJson()", function() {
     it("'5.0E-0' === 5", function() {
         命.strictEqual(parseJson('5.0E-0'), 5)
     });
-    // Negative tests for number parsing.
+
+    /*
+        Negative tests for number parsing.
+    */
     it("'-' should not parse (no signs alone)", function() {
         命.throws(() => parseJson('-'), {name: "EvalError"})
     });
@@ -161,7 +184,10 @@ describe("parseJson()", function() {
     it("'5+5' should not parse (invalid position of sign)", function() {
         命.throws(() => parseJson('5+5'), {name: "EvalError"})
     });
-    // Positive tests for array parsing.
+
+    /*
+        Positive tests for array parsing.
+    */
     it("'[]' === []", function() {
         命.deepStrictEqual(parseJson('[]'), [])
     });
@@ -189,7 +215,10 @@ describe("parseJson()", function() {
     it("'[[], [], [], [[[]]]]' === [[], [], [], [[[]]]]", function() {
         命.deepStrictEqual(parseJson('[[], [], [], [[[]]]]'), [[], [], [], [[[]]]])
     });
-    // Negative tests for array parsing.
+
+    /*
+        Negative tests for array parsing.
+    */
     it("'[abc]' should not parse (contains invalid element)", function() {
         命.throws(() => parseJson('[abc]'), {name: "EvalError"})
     });
