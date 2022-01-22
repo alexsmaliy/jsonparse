@@ -103,9 +103,11 @@ export function parseJson(source: string) {
         throw new EvalError("An empty string is not valid JSON! (But a string containing an empty string is: '\"\"'.)");
     }
 
-    const [node, indexWeAdvancedTo] = advanceOneNode(source, 0);
+    const dataStart = skipUpToNonWhitespace(source, 0);
+    const [node, indexWeAdvancedTo] = advanceOneNode(source, dataStart);
+    const maybeUnexpectedTail = skipUpToNonWhitespace(source, indexWeAdvancedTo);
 
-    if (indexWeAdvancedTo !== source.length) {
+    if (maybeUnexpectedTail !== source.length) {
         throw new EvalError(`Unexpected trailing characters at position ${indexWeAdvancedTo}!`);
     }
 
@@ -274,8 +276,15 @@ export function getNumberNode(source: string, index: number): [NumberNode, numbe
             if (seenPoint || seenExp) {
                 throw new EvalError(`Encountered invalid character while parsing a number at position ${i}!`);
             } else {
-                seenPoint = true;
                 i++;
+                if (i === len) {
+                    throw new EvalError(`Encountered unexpected end of input while parsing a number at position ${i}!`);
+                } else if (isDigit(source, i)) {
+                    seenPoint = true;
+                    i++;
+                } else {
+                    throw new EvalError(`Encountered unexpected character while parsing a number at position ${i}!`);
+                }
             }
             continue;
         }
@@ -326,4 +335,4 @@ export function getArrayNode(source: string, index: number): [ArrayNode, number]
     return [node, index];
 }
 
-console.log(advanceOneNode('   1e0  ', 0));
+// console.log(advanceOneNode('   5.  ', 0));
