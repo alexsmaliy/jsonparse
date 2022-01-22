@@ -1,3 +1,11 @@
+type JsonObject = {
+    [key: string]: JsonObjectValue
+};
+
+type JsonObjectValue = null | boolean | number | string | JsonArray | JsonObject;
+
+type JsonArray = JsonObjectValue[];
+
 class Token {
     constructor(public source: string, public start: number, public endExclusive: number) {}
 
@@ -48,7 +56,7 @@ class StringNode implements JsonNode<string> {
     }
 }
 
-class ArrayNode implements JsonNode<Array<any>> {
+class ArrayNode implements JsonNode<JsonArray> {
     constructor(public elements: JsonNode<any>[], public start: number, public endExclusive: number) {}
  
     getValue() {
@@ -56,11 +64,11 @@ class ArrayNode implements JsonNode<Array<any>> {
     }
 }
 
-class ObjectNode implements JsonNode<object> {
-    constructor(public entries: [StringNode, JsonNode<any>][]) {}
+class ObjectNode implements JsonNode<JsonObject> {
+    constructor(public entries: [StringNode, JsonNode<any>][], public start: number, public endExclusive: number) {}
 
     getValue() {
-        const obj = Object.create(null);
+        const obj: JsonObject = {}; // Object.create(null) better?
         for (const entry of this.entries) {
             const key = entry[0].getValue();
             const value = entry[1].getValue();
@@ -126,8 +134,7 @@ export function advanceOneNode(source: string, index: number): [JsonNode<any>, n
 
     switch (source.charAt(i)) {
         case "{":
-            // [node, indexWeAdvancedTo] = getObjectNode(source, index);
-            [node, indexWeAdvancedTo] = getNullNode(source, i);
+            [node, indexWeAdvancedTo] = getObjectNode(source, index);
             break;
         case "[":
             [node, indexWeAdvancedTo] = getArrayNode(source, index);
@@ -326,8 +333,7 @@ export function getNumberNode(source: string, index: number): [NumberNode, numbe
 export function getArrayNode(source: string, index: number): [ArrayNode, number] {
     const children: JsonNode<any>[] = [];
     const len = source.length;
-    let i = index + 1; // step over opening [
-    i = skipUpToNonWhitespace(source, i);
+    let i = skipUpToNonWhitespace(source, index + 1); // step over opening [ and skip whitespace
 
     if (i === len) {
         throw new EvalError(`Encountered unexpected end of input while parsing an array starting at ${index}!`);
@@ -374,4 +380,61 @@ export function getArrayNode(source: string, index: number): [ArrayNode, number]
     return [node, i + 1];
 }
 
-console.log(advanceOneNode('[1, 2, 3, "", null, false, ["nested"]]', 0)[0].getValue());
+export function getObjectNode(source: string, index: number): [ObjectNode, number] {
+    const entries: [StringNode, JsonNode<any>][] = [];
+    const len = source.length;
+    let i = skipUpToNonWhitespace(source, index + 1); // step over opening { and skip whitespace
+
+    if (i === len) {
+        throw new EvalError(`Encountered unexpected end of input while parsing object literal starting at ${index}!`);
+    }
+
+    let expectAnotherEntry = false;
+
+    while (true) {
+        if (i === len) {
+            throw new EvalError(`Encountered unexpected end of input while parsing object literal starting at ${index}!`);
+        }
+
+        if (source.charAt(i) === '}') {
+            if (!expectAnotherEntry) {
+                break; // end of object
+            } else {
+                throw new EvalError(`Invalid trailing comma in object literal beginning at position ${index}!`);
+            }
+        }
+
+        if (source.charAt(i) !== "\"") {
+            throw new EvalError(`Unable to parse key string in object literal at position ${i}!`);
+        }
+
+        const [keyNode, advancedTo] = getStringNode(source, i);
+        i = skipUpToNonWhitespace(source, advancedTo);
+
+        if (i === len || source.charAt(i) !== ":") {
+            throw new EvalError(`Unable to parse value string in object literal at position ${i}!`);
+        }
+
+        i = skipUpToNonWhitespace(source, i + 1); // step over key-value separator ':' and advance to value
+        const [valueNode, advancedTo2] = advanceOneNode(source, i);
+        expectAnotherEntry = false;
+        i = skipUpToNonWhitespace(source, advancedTo2);
+
+        if (i === len) {
+            throw new EvalError(`Unexpected end of input while parsing object literal starting at ${index}!`);
+        }
+
+        // step over comma and any subsequent whitespace and set the flag to expect another entry
+        if (source.charAt(i) === ",") {
+            expectAnotherEntry = true;
+            i = skipUpToNonWhitespace(source, i + 1);
+        }
+
+        entries.push([keyNode, valueNode]);
+    }
+
+    const node = new ObjectNode(entries, index, i + 1);
+    return [node, i + 1];
+}
+
+// console.log(advanceOneNode('{"a": [1, 2, "array"], "b": null, "c": {"d": 4}}', 0)[0].getValue());

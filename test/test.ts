@@ -243,4 +243,78 @@ describe("parseJson()", function() {
     it("'123]' should not parse (not well-formed array)", function() {
         命.throws(() => parseJson('123]'), {name: "EvalError"})
     });
+
+    /*
+        Positive tests for object literal parsing.
+    */
+    it("'{}' === {}", function() {
+        命.deepStrictEqual(parseJson('{}'), {})
+    });
+    
+    it("'   {   }   ' === {}", function() {
+        命.deepStrictEqual(parseJson('   {   }   '), {})
+    });
+
+    it("'{\"a\": 5}' === {\"a\": 5}", function() {
+        命.deepStrictEqual(parseJson('{\"a\": 5}'), {"a": 5})
+    });
+
+    it("'{  \"a\"  :null  }' === {\"a\": null}", function() {
+        命.deepStrictEqual(parseJson('{  \"a\"  :null  }'), {"a": null})
+    });
+
+    it("'{\"a\": 5, \"bc\": 10, \"def ghi\": 15}' === {\"a\": 5, \"bc\": 10, \"def  ghi\": 15}", function() {
+        命.deepStrictEqual(parseJson('{\"a\": 5, \"bc\": 10, \"def ghi\": 15}'), {"a": 5, "bc": 10, "def ghi": 15})
+    });
+
+    it("'{ \"a\": { \"b\": { \"c\": null}}}' === {\"a\": {\"b\": {\"c\": null}}}", function() {
+        命.deepStrictEqual(parseJson('{ \"a\": { \"b\": { \"c\": null}}}'), {"a": {"b": {"c": null}}})
+    });
+
+    it("'{\"a\": [\"b\", false, 5, {\"c\": \"moo\"}]}' === {\"a\": [\"b\", false, 5, {\"c\": \"moo\"}]}", function() {
+        命.deepStrictEqual(parseJson('{\"a\": [\"b\", false, 5, {\"c\": \"moo\"}]}'), {"a": ["b", false, 5, {"c": "moo"}]})
+    });
+
+    /*
+        Negative tests for object literal parsing.
+    */
+    it("'{,}' should not parse (only comma)", function() {
+        命.throws(() => parseJson('{,}'), {name: "EvalError"})
+    });
+
+    it("'{:}' should not parse (only colon)", function() {
+        命.throws(() => parseJson('{:}'), {name: "EvalError"})
+    });
+
+    it("'{\"a\"}' should not parse (only key)", function() {
+        命.throws(() => parseJson('{\"a\"}'), {name: "EvalError"})
+    });
+
+    it("'{5: \"a\"}' should not parse (key must be string)", function() {
+        命.throws(() => parseJson('{5: \"a\"}'), {name: "EvalError"})
+    });
+
+    it("'{ : \"a\"}' should not parse (only value)", function() {
+        命.throws(() => parseJson('{ : \"a\"}'), {name: "EvalError"})
+    });
+
+    it("'{[1, 2, 3]}' should not parse (only key, but different)", function() {
+        命.throws(() => parseJson('{[1, 2, 3]}'), {name: "EvalError"})
+    });
+
+    it("'{\"a\": { }' should not parse (object literal not closed)", function() {
+        命.throws(() => parseJson('{\"a\": { }'), {name: "EvalError"})
+    });
+
+    it("'\"a\": 5}' should not parse (object literal not properly opened)", function() {
+        命.throws(() => parseJson('\"a\": 5}'), {name: "EvalError"})
+    });
+
+    it("'{\"a\": 5, \"b\": 10,}' should not parse (trailing comma)", function() {
+        命.throws(() => parseJson('{\"a\": 5, \"b\": 10,}'), {name: "EvalError"})
+    });
+
+    it("'{  , \"a\": 5, \"b\": 10}' should not parse (leading comma)", function() {
+        命.throws(() => parseJson('{  , \"a\": 5, \"b\": 10}'), {name: "EvalError"})
+    });
 });
