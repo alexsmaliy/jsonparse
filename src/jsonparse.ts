@@ -57,7 +57,7 @@ class StringNode implements JsonNode<string> {
 }
 
 class ArrayNode implements JsonNode<JsonArray> {
-    constructor(public elements: JsonNode<JsonValue>[], public start: number, public endExclusive: number) {}
+    constructor(public token: Token, public elements: JsonNode<JsonValue>[]) {}
  
     getValue() {
         return this.elements.map(element => element.getValue());
@@ -65,7 +65,7 @@ class ArrayNode implements JsonNode<JsonArray> {
 }
 
 class ObjectNode implements JsonNode<JsonObject> {
-    constructor(public entries: [StringNode, JsonNode<JsonValue>][], public start: number, public endExclusive: number) {}
+    constructor(public token: Token, public entries: [StringNode, JsonNode<JsonValue>][]) {}
 
     getValue() {
         const obj: JsonObject = {}; // Object.create(null) better?
@@ -377,7 +377,8 @@ function getArrayNode(source: string, index: number): [ArrayNode, number] {
     }
 
     // i ends up being the last *seen* character -- we indicate that first *unseen* character is i + 1
-    const node = new ArrayNode(children, index, i + 1);
+    const token = new Token(source, index, i + 1);
+    const node = new ArrayNode(token, children);
     return [node, i + 1];
 }
 
@@ -435,7 +436,8 @@ function getObjectNode(source: string, index: number): [ObjectNode, number] {
     }
 
     // i ends up being the last *seen* character -- we indicate that first *unseen* character is i + 1
-    const node = new ObjectNode(entries, index, i + 1);
+    const token = new Token(source, index, i + 1);
+    const node = new ObjectNode(token, entries);
     return [node, i + 1];
 }
 
