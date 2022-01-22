@@ -227,6 +227,10 @@ export function getStringNode(source: string, index: number): [StringNode, numbe
             }
         }
 
+        if (/[\t\n\r]/.test(source.charAt(i))) {
+            throw new EvalError(`Unescaped control sequence at position ${i}!`);
+        }
+
         i++; // Advance to next character.
     }
 
