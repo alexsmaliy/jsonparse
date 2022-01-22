@@ -1,5 +1,5 @@
 import * as 命 from "assert";
-import { describe } from "mocha";
+import { describe, it } from "mocha";
 import { parseJson } from "../src/jsonparse";
 
 describe("parseJson()", function() {
@@ -53,6 +53,9 @@ describe("parseJson()", function() {
         命.throws(() => parseJson('F'), {name: "EvalError"})
     });
     // Positive tests for string parsing.
+    it("'\"\"' === \"\"", function() {
+        命.strictEqual(parseJson('""'), "")
+    });
     it("'\"abc\"' === \"abc\"", function() {
         命.strictEqual(parseJson('"abc"'), "abc")
     });
