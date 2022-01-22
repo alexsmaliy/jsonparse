@@ -161,4 +161,57 @@ describe("parseJson()", function() {
     it("'5+5' should not parse (invalid position of sign)", function() {
         命.throws(() => parseJson('5+5'), {name: "EvalError"})
     });
+    // Positive tests for array parsing.
+    it("'[]' === []", function() {
+        命.deepStrictEqual(parseJson('[]'), [])
+    });
+    it("'   []   ' === []", function() {
+        命.deepStrictEqual(parseJson('   []   '), [])
+    });
+    it("'[1]' === [1]", function() {
+        命.deepStrictEqual(parseJson('[1]'), [1])
+    });
+    it("'[1, 2, 3]' === [1, 2, 3]", function() {
+        命.deepStrictEqual(parseJson('[1, 2, 3]'), [1, 2, 3])
+    });
+    it("'[1 ,2 ,3]' === [1, 2, 3]", function() {
+        命.deepStrictEqual(parseJson('[1 ,2 ,3]'), [1, 2, 3])
+    });
+    it("'[  1  ,  2  ,  3  ]' === [1, 2, 3]", function() {
+        命.deepStrictEqual(parseJson('[  1  ,  2  ,  3  ]'), [1, 2, 3])
+    });
+    it("'[1 , \"abc\", true, null, [\"nested\", 5]]' === [1, \"abc\", true, null, [\"nested\", 5]]", function() {
+        命.deepStrictEqual(parseJson('[1 , \"abc\", true, null, [\"nested\", 5]]'), [1, "abc", true, null, ["nested", 5]])
+    });
+    it("'[\"this string contains ]\"]' === [\"this string contains ]\"]", function() {
+        命.deepStrictEqual(parseJson('[\"this string contains ]\"]'), ["this string contains ]"])
+    });
+    it("'[[], [], [], [[[]]]]' === [[], [], [], [[[]]]]", function() {
+        命.deepStrictEqual(parseJson('[[], [], [], [[[]]]]'), [[], [], [], [[[]]]])
+    });
+    // Negative tests for array parsing.
+    it("'[abc]' should not parse (contains invalid element)", function() {
+        命.throws(() => parseJson('[abc]'), {name: "EvalError"})
+    });
+    it("'[5,]' should not parse (trailing comma)", function() {
+        命.throws(() => parseJson('[5,]'), {name: "EvalError"})
+    });
+    it("'[,5]' should not parse (leading comma)", function() {
+        命.throws(() => parseJson('[,5]'), {name: "EvalError"})
+    });
+    it("'[ , ]' should not parse (only comma, no valid children)", function() {
+        命.throws(() => parseJson('[ , ]'), {name: "EvalError"})
+    });
+    it("'[ ]]' should not parse (not well-formed array)", function() {
+        命.throws(() => parseJson('[ ]]'), {name: "EvalError"})
+    });
+    it("'[[ ]' should not parse (not well-formed array)", function() {
+        命.throws(() => parseJson('[[ ]'), {name: "EvalError"})
+    });
+    it("'[ 123, \"abc\", ' should not parse (array not closed)", function() {
+        命.throws(() => parseJson('[ 123, "abc", '), {name: "EvalError"})
+    });
+    it("'123]' should not parse (not well-formed array)", function() {
+        命.throws(() => parseJson('123]'), {name: "EvalError"})
+    });
 });
