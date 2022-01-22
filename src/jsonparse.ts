@@ -352,7 +352,6 @@ export function getArrayNode(source: string, index: number): [ArrayNode, number]
             }
         }
 
-        console.log(`Trying to parse a node starting at ${i}.`)
         const [node, advancedTo] = advanceOneNode(source, i);
         expectAnotherChild = false;
         i = skipUpToNonWhitespace(source, advancedTo);
