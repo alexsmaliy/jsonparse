@@ -49,7 +49,7 @@ class StringNode implements JsonNode<string> {
 }
 
 class ArrayNode implements JsonNode<Array<any>> {
-    constructor(public elements: JsonNode<any>[], start: number, endExclusive: number) {}
+    constructor(public elements: JsonNode<any>[], public start: number, public endExclusive: number) {}
  
     getValue() {
         return this.elements.map(element => element.getValue());
@@ -75,7 +75,7 @@ export function isWhitespace(source: string, index: number) {
 }
 
 export function isTokenRightBoundary(source: string, index: number) {
-    return index === source.length || /\s|[}],]/.test(source.charAt(index)); // whitespace or } ] ,
+    return index === source.length || /\s|[}\],]/.test(source.charAt(index)); // whitespace or } ] ,
 }
 
 export function isSign(source: string, index: number) {
@@ -115,7 +115,7 @@ export function parseJson(source: string) {
 }
 
 export function advanceOneNode(source: string, index: number): [JsonNode<any>, number] {
-    let i = skipUpToNonWhitespace(source, index);
+    const i = index;
 
     if (i === source.length) {
         throw new EvalError(`Unexpected end of input while looking for next value after position ${index}!`);
@@ -329,14 +329,50 @@ export function getArrayNode(source: string, index: number): [ArrayNode, number]
     let i = index + 1; // step over opening [
     i = skipUpToNonWhitespace(source, i);
 
-    while (source.charAt(i) !== "]") {
-        if (i === len) {
-            throw new EvalError(`Encounteed unexpected end of input while parsing an array starting at ${index}!`);
-        }
+    if (i === len) {
+        throw new EvalError(`Encountered unexpected end of input while parsing an array starting at ${index}!`);
     }
 
-    const node = new ArrayNode(children, index, i);
-    return [node, index];
+    if (source.charAt(i) === ",") {
+        throw new EvalError(`Invalid leading comma in array literal beginning at position ${index}!`);
+    }
+
+    let expectAnotherChild = false;
+
+    while (true) {
+        if (i === len) {
+            throw new EvalError(`Encountered unexpected end of input while parsing an array starting at ${index}!`);
+        }
+
+        if (source.charAt(i) === ']') {
+            if (!expectAnotherChild) {
+                break; // end of array
+            } else {
+                throw new EvalError(`Invalid trailing comma in array literal beginning at position ${index}!`);
+            }
+        }
+
+        console.log(`Trying to parse a node starting at ${i}.`)
+        const [node, advancedTo] = advanceOneNode(source, i);
+        expectAnotherChild = false;
+        i = skipUpToNonWhitespace(source, advancedTo);
+
+        if (i === len) {
+            throw new EvalError(`Encountered unexpected end of input while parsing an array starting at ${index}!`);
+        }
+
+        // step over comma and any subsequent whitespace and set the flag to expect another child
+        if (source.charAt(i) === ",") {
+            expectAnotherChild = true;
+            i = skipUpToNonWhitespace(source, i + 1);
+        }
+
+        children.push(node);
+    }
+
+    // i ends up being the last *seen* character -- we indicate that first *unseen* character is i + 1
+    const node = new ArrayNode(children, index, i + 1);
+    return [node, i + 1];
 }
 
-// console.log(advanceOneNode('   5.  ', 0));
+console.log(advanceOneNode('[1, 2, 3, "", null, false, ["nested"]]', 0)[0].getValue());
