@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@parcel/transformer-typescript-tsc": "^2.2.1",
+    "parcel": "^2.2.1",
+    "typescript": ">=3.0.0"
+  }
+}
