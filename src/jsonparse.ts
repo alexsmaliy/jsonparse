@@ -1,10 +1,10 @@
 type JsonObject = {
-    [key: string]: JsonObjectValue
+    [key: string]: JsonValue
 };
 
-type JsonObjectValue = null | boolean | number | string | JsonArray | JsonObject;
+type JsonValue = null | boolean | number | string | JsonArray | JsonObject;
 
-type JsonArray = JsonObjectValue[];
+type JsonArray = JsonValue[];
 
 class Token {
     constructor(public source: string, public start: number, public endExclusive: number) {}
@@ -57,7 +57,7 @@ class StringNode implements JsonNode<string> {
 }
 
 class ArrayNode implements JsonNode<JsonArray> {
-    constructor(public elements: JsonNode<any>[], public start: number, public endExclusive: number) {}
+    constructor(public elements: JsonNode<JsonValue>[], public start: number, public endExclusive: number) {}
  
     getValue() {
         return this.elements.map(element => element.getValue());
@@ -65,7 +65,7 @@ class ArrayNode implements JsonNode<JsonArray> {
 }
 
 class ObjectNode implements JsonNode<JsonObject> {
-    constructor(public entries: [StringNode, JsonNode<any>][], public start: number, public endExclusive: number) {}
+    constructor(public entries: [StringNode, JsonNode<JsonValue>][], public start: number, public endExclusive: number) {}
 
     getValue() {
         const obj: JsonObject = {}; // Object.create(null) better?
@@ -78,26 +78,26 @@ class ObjectNode implements JsonNode<JsonObject> {
     }
 }
 
-export function isWhitespace(source: string, index: number) {
+function isWhitespace(source: string, index: number) {
     return /\s/.test(source.charAt(index)); // no attempt to handle Unicode surrogate pairs
 }
 
-export function isTokenRightBoundary(source: string, index: number) {
+function isTokenRightBoundary(source: string, index: number) {
     return index === source.length || /\s|[}\],]/.test(source.charAt(index)); // whitespace or } ] ,
 }
 
-export function isSign(source: string, index: number) {
+function isSign(source: string, index: number) {
     return /[+-]/.test(source.charAt(index));
 }
 
-export function isDigit(source: string, index: number) {
+function isDigit(source: string, index: number) {
     return /[0-9]/.test(source.charAt(index));
 }
 
 // Find the smallest index greater or equal to `index` such that `source.charAt(index)` is not a whitespace char.
 // In particular, if `source.charAt(index)` is not whitespace, just return `index` as given.
 // Returns `source.length` if there is only whitespace between `index` and end of string.
-export function skipUpToNonWhitespace(source: string, index: number) {
+function skipUpToNonWhitespace(source: string, index: number) {
     const len = source.length;
     while (index < len && isWhitespace(source, index)) {
         index++;
@@ -106,7 +106,8 @@ export function skipUpToNonWhitespace(source: string, index: number) {
     return index;
 }
 
-export function parseJson(source: string) {
+// module entry point
+function parseJson(source: string) {
     if (source.length === 0) {
         throw new EvalError("An empty string is not valid JSON! (But a string containing an empty string is: '\"\"'.)");
     }
@@ -122,14 +123,14 @@ export function parseJson(source: string) {
     return node.getValue();
 }
 
-export function advanceOneNode(source: string, index: number): [JsonNode<any>, number] {
+function advanceOneNode(source: string, index: number): [JsonNode<JsonValue>, number] {
     const i = index;
 
     if (i === source.length) {
         throw new EvalError(`Unexpected end of input while looking for next value after position ${index}!`);
     }
 
-    let node: JsonNode<any>;
+    let node: JsonNode<JsonValue>;
     let indexWeAdvancedTo: number;
 
     switch (source.charAt(i)) {
@@ -169,7 +170,7 @@ export function advanceOneNode(source: string, index: number): [JsonNode<any>, n
     return [node, indexWeAdvancedTo];
 }
 
-export function getNullNode(source: string, index: number): [NullNode, number] {
+function getNullNode(source: string, index: number): [NullNode, number] {
     if (source.length < index + 4) {
         throw new EvalError(`Unexpected end of input while trying to parse "null" at position ${index}!`);
     }
@@ -184,7 +185,7 @@ export function getNullNode(source: string, index: number): [NullNode, number] {
 }
 
 // By this point we know that the current character is either "t" or "f".
-export function getBooleanNode(source: string, index: number): [BooleanNode, number] {
+function getBooleanNode(source: string, index: number): [BooleanNode, number] {
     switch (source.charAt(index)) {
         case "t": {
             if (source.length < index + 4) {
@@ -215,7 +216,7 @@ export function getBooleanNode(source: string, index: number): [BooleanNode, num
     }
 }
 
-export function getStringNode(source: string, index: number): [StringNode, number] {
+function getStringNode(source: string, index: number): [StringNode, number] {
     let i = index + 1; // Step over opening quotation mark.
     const len = source.length;
 
@@ -252,7 +253,7 @@ export function getStringNode(source: string, index: number): [StringNode, numbe
 
 // valid JSON numbers: 5  5.0  -5  -5.0  5e0  5.0e0  -5.0e0  5.0e+0  5.0e-0  5.0E-0
 // not valid: -  05  5.  .5  e0  5e0.5  hexadecimal/octal
-export function getNumberNode(source: string, index: number): [NumberNode, number] {
+function getNumberNode(source: string, index: number): [NumberNode, number] {
     let i = index;
     const len = source.length;
     let leadingMinus = source.charAt(i) === "-";
@@ -330,7 +331,7 @@ export function getNumberNode(source: string, index: number): [NumberNode, numbe
     return [node, i];
 }
 
-export function getArrayNode(source: string, index: number): [ArrayNode, number] {
+function getArrayNode(source: string, index: number): [ArrayNode, number] {
     const children: JsonNode<any>[] = [];
     const len = source.length;
     let i = skipUpToNonWhitespace(source, index + 1); // step over opening [ and skip whitespace
@@ -380,7 +381,7 @@ export function getArrayNode(source: string, index: number): [ArrayNode, number]
     return [node, i + 1];
 }
 
-export function getObjectNode(source: string, index: number): [ObjectNode, number] {
+function getObjectNode(source: string, index: number): [ObjectNode, number] {
     const entries: [StringNode, JsonNode<any>][] = [];
     const len = source.length;
     let i = skipUpToNonWhitespace(source, index + 1); // step over opening { and skip whitespace
@@ -433,8 +434,9 @@ export function getObjectNode(source: string, index: number): [ObjectNode, numbe
         entries.push([keyNode, valueNode]);
     }
 
+    // i ends up being the last *seen* character -- we indicate that first *unseen* character is i + 1
     const node = new ObjectNode(entries, index, i + 1);
     return [node, i + 1];
 }
 
-// console.log(advanceOneNode('{"a": [1, 2, "array"], "b": null, "c": {"d": 4}}', 0)[0].getValue());
+export { parseJson };
