@@ -22,6 +22,9 @@ describe("parseJson()", function() {
     it("'nul' should not parse", function() {
         命.throws(() => parseJson('nul'), {name: "EvalError"})
     });
+    it("'nullll' should not parse", function() {
+        命.throws(() => parseJson('nullll'), {name: "EvalError"})
+    });
     it("'nul l' should not parse", function() {
         命.throws(() => parseJson('nul l'), {name: "EvalError"})
     });
@@ -45,6 +48,9 @@ describe("parseJson()", function() {
     /*
         Negative tests for boolean parsing.
     */
+    it("'truetrue' should not parse", function() {
+        命.throws(() => parseJson('True'), {name: "EvalError"})
+    });
     it("'True' should not parse (only true/false are valid boolean values)", function() {
         命.throws(() => parseJson('True'), {name: "EvalError"})
     });
@@ -197,6 +203,9 @@ describe("parseJson()", function() {
     it("'[1]' === [1]", function() {
         命.deepStrictEqual(parseJson('[1]'), [1])
     });
+    it("'[true]' === [true]", function() {
+        命.deepStrictEqual(parseJson('[true]'), [true])
+    });
     it("'[1, 2, 3]' === [1, 2, 3]", function() {
         命.deepStrictEqual(parseJson('[1, 2, 3]'), [1, 2, 3])
     });
@@ -221,6 +230,15 @@ describe("parseJson()", function() {
     */
     it("'[abc]' should not parse (contains invalid element)", function() {
         命.throws(() => parseJson('[abc]'), {name: "EvalError"})
+    });
+    it("'[truetrue]' should not parse (no separator between elements)", function() {
+        命.throws(() => parseJson('[truetrue]'), {name: "EvalError"})
+    });
+    it("'[falsefalse]' should not parse (no separator between elements)", function() {
+        命.throws(() => parseJson('[falsefalse]'), {name: "EvalError"})
+    });
+    it("'[nullnull]' should not parse (no separator between elements)", function() {
+        命.throws(() => parseJson('[nullnull]'), {name: "EvalError"})
     });
     it("'[5,]' should not parse (trailing comma)", function() {
         命.throws(() => parseJson('[5,]'), {name: "EvalError"})
@@ -288,6 +306,10 @@ describe("parseJson()", function() {
 
     it("'{\"a\"}' should not parse (only key)", function() {
         命.throws(() => parseJson('{\"a\"}'), {name: "EvalError"})
+    });
+
+    it("'{\"a\": truetrue}' should not parse (only key)", function() {
+        命.throws(() => parseJson('{\"a\": truetrue}'), {name: "EvalError"})
     });
 
     it("'{5: \"a\"}' should not parse (key must be string)", function() {
