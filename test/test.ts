@@ -20,13 +20,13 @@ describe("parseJson()", function() {
         Negative tests for null parsing.
     */
     it("'nul' should not parse", function() {
-        命.throws(() => parseJson('nul'), {name: "EvalError"})
+        命.throws(() => parseJson('nul'), {name: "SyntaxError"})
     });
     it("'nullll' should not parse", function() {
-        命.throws(() => parseJson('nullll'), {name: "EvalError"})
+        命.throws(() => parseJson('nullll'), {name: "SyntaxError"})
     });
     it("'nul l' should not parse", function() {
-        命.throws(() => parseJson('nul l'), {name: "EvalError"})
+        命.throws(() => parseJson('nul l'), {name: "SyntaxError"})
     });
 
     /*
@@ -49,25 +49,25 @@ describe("parseJson()", function() {
         Negative tests for boolean parsing.
     */
     it("'truetrue' should not parse", function() {
-        命.throws(() => parseJson('True'), {name: "EvalError"})
+        命.throws(() => parseJson('True'), {name: "SyntaxError"})
     });
     it("'True' should not parse (only true/false are valid boolean values)", function() {
-        命.throws(() => parseJson('True'), {name: "EvalError"})
+        命.throws(() => parseJson('True'), {name: "SyntaxError"})
     });
     it("'False' should not parse (only true/false are valid boolean values)", function() {
-        命.throws(() => parseJson('False'), {name: "EvalError"})
+        命.throws(() => parseJson('False'), {name: "SyntaxError"})
     });
     it("'TRUE' should not parse (only true/false are valid boolean values)", function() {
-        命.throws(() => parseJson('TRUE'), {name: "EvalError"})
+        命.throws(() => parseJson('TRUE'), {name: "SyntaxError"})
     });
     it("'FALSE' should not parse (only true/false are valid boolean values)", function() {
-        命.throws(() => parseJson('FALSE'), {name: "EvalError"})
+        命.throws(() => parseJson('FALSE'), {name: "SyntaxError"})
     });
     it("'T' should not parse (only true/false are valid boolean values)", function() {
-        命.throws(() => parseJson('T'), {name: "EvalError"})
+        命.throws(() => parseJson('T'), {name: "SyntaxError"})
     });
     it("'F' should not parse (only true/false are valid boolean values)", function() {
-        命.throws(() => parseJson('F'), {name: "EvalError"})
+        命.throws(() => parseJson('F'), {name: "SyntaxError"})
     });
 
     /*
@@ -108,22 +108,22 @@ describe("parseJson()", function() {
         Negative tests for string parsing.
     */
     it("'\"a \\z b\"' should not parse (invalid control sequence)", function() {
-        命.throws(() => parseJson('\"a \\z b\"'), {name: "EvalError"})
+        命.throws(() => parseJson('\"a \\z b\"'), {name: "SyntaxError"})
     });
     it("'\"a \r b\"' should not parse (unescaped \\r disallowed)", function() {
-        命.throws(() => parseJson('\"a \r b\"'), {name: "EvalError"})
+        命.throws(() => parseJson('\"a \r b\"'), {name: "SyntaxError"})
     });
     it("'\"a \n b\"' should not parse (unescaped \\n disallowed)", function() {
-        命.throws(() => parseJson('\"a \n b\"'), {name: "EvalError"})
+        命.throws(() => parseJson('\"a \n b\"'), {name: "SyntaxError"})
     });
     it("'\"a \t b\"' should not parse (unescaped \\t disallowed)", function() {
-        命.throws(() => parseJson('\"a \t b\"'), {name: "EvalError"})
+        命.throws(() => parseJson('\"a \t b\"'), {name: "SyntaxError"})
     });
     it("'\"\\\"' should not parse (unescaped backslash eats closing double quote)", function() {
-        命.throws(() => parseJson('\"\\\"'), {name: "EvalError"})
+        命.throws(() => parseJson('\"\\\"'), {name: "SyntaxError"})
     });
     it("'\"\\ \"' should not parse (unescaped backslash looks like unsupported control sequence)", function() {
-        命.throws(() => parseJson('\"\\ \"'), {name: "EvalError"})
+        命.throws(() => parseJson('\"\\ \"'), {name: "SyntaxError"})
     });
 
     /*
@@ -170,34 +170,34 @@ describe("parseJson()", function() {
         Negative tests for number parsing.
     */
     it("'-' should not parse (no signs alone)", function() {
-        命.throws(() => parseJson('-'), {name: "EvalError"})
+        命.throws(() => parseJson('-'), {name: "SyntaxError"})
     });
     it("'+5' should not parse (no explicit leading plus)", function() {
-        命.throws(() => parseJson('+5'), {name: "EvalError"})
+        命.throws(() => parseJson('+5'), {name: "SyntaxError"})
     });
     it("'05' should not parse (no leading zeros)", function() {
-        命.throws(() => parseJson('05'), {name: "EvalError"})
+        命.throws(() => parseJson('05'), {name: "SyntaxError"})
     });
     it("'5.' should not parse (no trailing decimal point)", function() {
-        命.throws(() => parseJson('5.'), {name: "EvalError"})
+        命.throws(() => parseJson('5.'), {name: "SyntaxError"})
     });
     it("'.5' should not parse (no bare decimal point)", function() {
-        命.throws(() => parseJson('.5'), {name: "EvalError"})
+        命.throws(() => parseJson('.5'), {name: "SyntaxError"})
     });
     it("'e0' should not parse (exponent must have preceding number)", function() {
-        命.throws(() => parseJson('e0'), {name: "EvalError"})
+        命.throws(() => parseJson('e0'), {name: "SyntaxError"})
     });
     it("'5e0.5' should not parse (invalid exponent power)", function() {
-        命.throws(() => parseJson('5e0.5'), {name: "EvalError"})
+        命.throws(() => parseJson('5e0.5'), {name: "SyntaxError"})
     });
     it("'5.0.0' should not parse (multiple decimal points)", function() {
-        命.throws(() => parseJson('5.0.0'), {name: "EvalError"})
+        命.throws(() => parseJson('5.0.0'), {name: "SyntaxError"})
     });
     it("'5e0e0' should not parse (multiple exponents)", function() {
-        命.throws(() => parseJson('5e0e0'), {name: "EvalError"})
+        命.throws(() => parseJson('5e0e0'), {name: "SyntaxError"})
     });
     it("'5+5' should not parse (invalid position of sign)", function() {
-        命.throws(() => parseJson('5+5'), {name: "EvalError"})
+        命.throws(() => parseJson('5+5'), {name: "SyntaxError"})
     });
 
     /*
@@ -244,37 +244,37 @@ describe("parseJson()", function() {
         Negative tests for array parsing.
     */
     it("'[abc]' should not parse (contains invalid element)", function() {
-        命.throws(() => parseJson('[abc]'), {name: "EvalError"})
+        命.throws(() => parseJson('[abc]'), {name: "SyntaxError"})
     });
     it("'[truetrue]' should not parse (no separator between elements)", function() {
-        命.throws(() => parseJson('[truetrue]'), {name: "EvalError"})
+        命.throws(() => parseJson('[truetrue]'), {name: "SyntaxError"})
     });
     it("'[falsefalse]' should not parse (no separator between elements)", function() {
-        命.throws(() => parseJson('[falsefalse]'), {name: "EvalError"})
+        命.throws(() => parseJson('[falsefalse]'), {name: "SyntaxError"})
     });
     it("'[nullnull]' should not parse (no separator between elements)", function() {
-        命.throws(() => parseJson('[nullnull]'), {name: "EvalError"})
+        命.throws(() => parseJson('[nullnull]'), {name: "SyntaxError"})
     });
     it("'[5,]' should not parse (trailing comma)", function() {
-        命.throws(() => parseJson('[5,]'), {name: "EvalError"})
+        命.throws(() => parseJson('[5,]'), {name: "SyntaxError"})
     });
     it("'[,5]' should not parse (leading comma)", function() {
-        命.throws(() => parseJson('[,5]'), {name: "EvalError"})
+        命.throws(() => parseJson('[,5]'), {name: "SyntaxError"})
     });
     it("'[ , ]' should not parse (only comma, no valid children)", function() {
-        命.throws(() => parseJson('[ , ]'), {name: "EvalError"})
+        命.throws(() => parseJson('[ , ]'), {name: "SyntaxError"})
     });
     it("'[ ]]' should not parse (not well-formed array)", function() {
-        命.throws(() => parseJson('[ ]]'), {name: "EvalError"})
+        命.throws(() => parseJson('[ ]]'), {name: "SyntaxError"})
     });
     it("'[[ ]' should not parse (not well-formed array)", function() {
-        命.throws(() => parseJson('[[ ]'), {name: "EvalError"})
+        命.throws(() => parseJson('[[ ]'), {name: "SyntaxError"})
     });
     it("'[ 123, \"abc\", ' should not parse (array not closed)", function() {
-        命.throws(() => parseJson('[ 123, "abc", '), {name: "EvalError"})
+        命.throws(() => parseJson('[ 123, "abc", '), {name: "SyntaxError"})
     });
     it("'123]' should not parse (not well-formed array)", function() {
-        命.throws(() => parseJson('123]'), {name: "EvalError"})
+        命.throws(() => parseJson('123]'), {name: "SyntaxError"})
     });
 
     /*
@@ -312,47 +312,47 @@ describe("parseJson()", function() {
         Negative tests for object literal parsing.
     */
     it("'{,}' should not parse (only comma)", function() {
-        命.throws(() => parseJson('{,}'), {name: "EvalError"})
+        命.throws(() => parseJson('{,}'), {name: "SyntaxError"})
     });
 
     it("'{:}' should not parse (only colon)", function() {
-        命.throws(() => parseJson('{:}'), {name: "EvalError"})
+        命.throws(() => parseJson('{:}'), {name: "SyntaxError"})
     });
 
     it("'{\"a\"}' should not parse (only key)", function() {
-        命.throws(() => parseJson('{\"a\"}'), {name: "EvalError"})
+        命.throws(() => parseJson('{\"a\"}'), {name: "SyntaxError"})
     });
 
     it("'{\"a\": truetrue}' should not parse (only key)", function() {
-        命.throws(() => parseJson('{\"a\": truetrue}'), {name: "EvalError"})
+        命.throws(() => parseJson('{\"a\": truetrue}'), {name: "SyntaxError"})
     });
 
     it("'{5: \"a\"}' should not parse (key must be string)", function() {
-        命.throws(() => parseJson('{5: \"a\"}'), {name: "EvalError"})
+        命.throws(() => parseJson('{5: \"a\"}'), {name: "SyntaxError"})
     });
 
     it("'{ : \"a\"}' should not parse (only value)", function() {
-        命.throws(() => parseJson('{ : \"a\"}'), {name: "EvalError"})
+        命.throws(() => parseJson('{ : \"a\"}'), {name: "SyntaxError"})
     });
 
     it("'{[1, 2, 3]}' should not parse (only key, but different)", function() {
-        命.throws(() => parseJson('{[1, 2, 3]}'), {name: "EvalError"})
+        命.throws(() => parseJson('{[1, 2, 3]}'), {name: "SyntaxError"})
     });
 
     it("'{\"a\": { }' should not parse (object literal not closed)", function() {
-        命.throws(() => parseJson('{\"a\": { }'), {name: "EvalError"})
+        命.throws(() => parseJson('{\"a\": { }'), {name: "SyntaxError"})
     });
 
     it("'\"a\": 5}' should not parse (object literal not properly opened)", function() {
-        命.throws(() => parseJson('\"a\": 5}'), {name: "EvalError"})
+        命.throws(() => parseJson('\"a\": 5}'), {name: "SyntaxError"})
     });
 
     it("'{\"a\": 5, \"b\": 10,}' should not parse (trailing comma)", function() {
-        命.throws(() => parseJson('{\"a\": 5, \"b\": 10,}'), {name: "EvalError"})
+        命.throws(() => parseJson('{\"a\": 5, \"b\": 10,}'), {name: "SyntaxError"})
     });
 
     it("'{  , \"a\": 5, \"b\": 10}' should not parse (leading comma)", function() {
-        命.throws(() => parseJson('{  , \"a\": 5, \"b\": 10}'), {name: "EvalError"})
+        命.throws(() => parseJson('{  , \"a\": 5, \"b\": 10}'), {name: "SyntaxError"})
     });
 
     /*

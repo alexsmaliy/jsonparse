@@ -109,7 +109,7 @@ function skipUpToNonWhitespace(source: string, index: number) {
 // module entry point
 function parseJson(source: string) {
     if (source.length === 0) {
-        throw new EvalError("An empty string is not valid JSON! (But a string containing an empty string is: '\"\"'.)");
+        throw new SyntaxError("An empty string is not valid JSON! (But a string containing an empty string is: '\"\"'.)");
     }
 
     const dataStart = skipUpToNonWhitespace(source, 0);
@@ -117,7 +117,7 @@ function parseJson(source: string) {
     const maybeUnexpectedTail = skipUpToNonWhitespace(source, indexWeAdvancedTo);
 
     if (maybeUnexpectedTail !== source.length) {
-        throw new EvalError(`Unexpected trailing characters at position ${indexWeAdvancedTo}!`);
+        throw new SyntaxError(`Unexpected trailing characters at position ${indexWeAdvancedTo}!`);
     }
 
     return node.getValue();
@@ -127,7 +127,7 @@ function advanceOneNode(source: string, index: number): [JsonNode<JsonValue>, nu
     const i = index;
 
     if (i === source.length) {
-        throw new EvalError(`Unexpected end of input while looking for next value after position ${index}!`);
+        throw new SyntaxError(`Unexpected end of input while looking for next value after position ${index}!`);
     }
 
     let node: JsonNode<JsonValue>;
@@ -164,7 +164,7 @@ function advanceOneNode(source: string, index: number): [JsonNode<JsonValue>, nu
             [node, indexWeAdvancedTo] = getStringNode(source, i);
             break;
         default:
-            throw new EvalError(`Error parsing JSON at character position ${i}!`);
+            throw new SyntaxError(`Error parsing JSON at character position ${i}!`);
     }
 
     return [node, indexWeAdvancedTo];
@@ -172,11 +172,11 @@ function advanceOneNode(source: string, index: number): [JsonNode<JsonValue>, nu
 
 function getNullNode(source: string, index: number): [NullNode, number] {
     if (source.length < index + 4) {
-        throw new EvalError(`Unexpected end of input while trying to parse "null" at position ${index}!`);
+        throw new SyntaxError(`Unexpected end of input while trying to parse "null" at position ${index}!`);
     }
 
     if (source.substring(index, index + 4) !== "null") {
-        throw new EvalError(`Unable to parse "null" at position ${index}!`)
+        throw new SyntaxError(`Unable to parse "null" at position ${index}!`)
     }
 
     const token = new Token(source, index, index + 4);
@@ -189,11 +189,11 @@ function getBooleanNode(source: string, index: number): [BooleanNode, number] {
     switch (source.charAt(index)) {
         case "t": {
             if (source.length < index + 4) {
-                throw new EvalError(`Unexpected end of input while trying to parse "true" at position ${index}!`);
+                throw new SyntaxError(`Unexpected end of input while trying to parse "true" at position ${index}!`);
             }
 
             if (source.substring(index, index + 4) !== "true") {
-                throw new EvalError(`Unable to parse "true" at position ${index}!`)
+                throw new SyntaxError(`Unable to parse "true" at position ${index}!`)
             }
 
             const token = new Token(source, index, index + 4);
@@ -202,11 +202,11 @@ function getBooleanNode(source: string, index: number): [BooleanNode, number] {
         }
         default: {
             if (source.length < index + 5) {
-                throw new EvalError(`Unexpected end of input while trying to parse "false" at position ${index}!`);
+                throw new SyntaxError(`Unexpected end of input while trying to parse "false" at position ${index}!`);
             }
 
             if (source.substring(index, index + 5) !== "false") {
-                throw new EvalError(`Unable to parse "false" at position ${index}!`)
+                throw new SyntaxError(`Unable to parse "false" at position ${index}!`)
             }
 
             const token = new Token(source, index, index + 5);
@@ -223,7 +223,7 @@ function getStringNode(source: string, index: number): [StringNode, number] {
     while (i < len && source.charAt(i) !== "\"") {
         if (source.charAt(i) === "\\") { // Handle potential escape sequence.
             if (i + 1 === len) {
-                throw new EvalError(`Unexpected end of input while parsing escape sequence at position ${i}!`);
+                throw new SyntaxError(`Unexpected end of input while parsing escape sequence at position ${i}!`);
             }
 
             i++; // Advance to character after /.
@@ -231,19 +231,19 @@ function getStringNode(source: string, index: number): [StringNode, number] {
 
             // \", \\, \n, \r, \t, that's reasonable, right?
             if (char !== "\"" && char !== "\\" && char !== "n" && char !== "r" && char !== "t") {
-                throw new EvalError(`Unknown escape sequence \\${char} at position ${i - 1}!`);
+                throw new SyntaxError(`Unknown escape sequence \\${char} at position ${i - 1}!`);
             }
         }
 
         if (/[\t\n\r]/.test(source.charAt(i))) {
-            throw new EvalError(`Unescaped control sequence at position ${i}!`);
+            throw new SyntaxError(`Unescaped control sequence at position ${i}!`);
         }
 
         i++; // Advance to next character.
     }
 
     if (i === len) {
-        throw new EvalError(`Unexpected end of input while parsing a string at position ${index}!`);
+        throw new SyntaxError(`Unexpected end of input while parsing a string at position ${index}!`);
     }
 
     const token = new Token(source, index + 1, i);
@@ -264,7 +264,7 @@ function getNumberNode(source: string, index: number): [NumberNode, number] {
     if (leadingMinus) {
         i++;
         if (isTokenRightBoundary(source, i) || !isDigit(source, i)) {
-            throw new EvalError(`Encountered invalid character while parsing a number at position ${i}!`);
+            throw new SyntaxError(`Encountered invalid character while parsing a number at position ${i}!`);
         }
     }
 
@@ -272,7 +272,7 @@ function getNumberNode(source: string, index: number): [NumberNode, number] {
     if (i < len && source.charAt(i) === "0" && !isTokenRightBoundary(source, i + 1)) {
         i++;
         if (source.charAt(i) !== ".") {
-            throw new EvalError(`Encountered unexpected leading zeros while parsing a number at position ${i}!`);
+            throw new SyntaxError(`Encountered unexpected leading zeros while parsing a number at position ${i}!`);
         }
     }
 
@@ -289,16 +289,16 @@ function getNumberNode(source: string, index: number): [NumberNode, number] {
 
         if (c === ".") {
             if (seenPoint || seenExp) {
-                throw new EvalError(`Encountered invalid character while parsing a number at position ${i}!`);
+                throw new SyntaxError(`Encountered invalid character while parsing a number at position ${i}!`);
             } else {
                 i++;
                 if (i === len) {
-                    throw new EvalError(`Encountered unexpected end of input while parsing a number at position ${i}!`);
+                    throw new SyntaxError(`Encountered unexpected end of input while parsing a number at position ${i}!`);
                 } else if (isDigit(source, i)) {
                     seenPoint = true;
                     i++;
                 } else {
-                    throw new EvalError(`Encountered unexpected character while parsing a number at position ${i}!`);
+                    throw new SyntaxError(`Encountered unexpected character while parsing a number at position ${i}!`);
                 }
             }
             continue;
@@ -306,16 +306,16 @@ function getNumberNode(source: string, index: number): [NumberNode, number] {
 
         if (c === "e" || c === "E") {
             if (seenExp) {
-                throw new EvalError(`Encountered invalid character while parsing a number at position ${i}!`);
+                throw new SyntaxError(`Encountered invalid character while parsing a number at position ${i}!`);
             } else {
                 i++;
                 if (i === len) {
-                    throw new EvalError(`Encountered unexpected end of input while parsing a number at position ${i}!`);
+                    throw new SyntaxError(`Encountered unexpected end of input while parsing a number at position ${i}!`);
                 } else if (isSign(source, i) || isDigit(source, i)) {
                     seenExp = true;
                     i++;
                 } else {
-                    throw new EvalError(`Encountered unexpected character while parsing a number at position ${i}!`);
+                    throw new SyntaxError(`Encountered unexpected character while parsing a number at position ${i}!`);
                 }
             }
             continue;
@@ -326,7 +326,7 @@ function getNumberNode(source: string, index: number): [NumberNode, number] {
             continue;
         }
 
-        throw new EvalError(`Encountered invalid character while parsing a number at position ${i}!`);
+        throw new SyntaxError(`Encountered invalid character while parsing a number at position ${i}!`);
     }
 
     const token = new Token(source, index, i);
@@ -340,25 +340,25 @@ function getArrayNode(source: string, index: number): [ArrayNode, number] {
     let i = skipUpToNonWhitespace(source, index + 1); // step over opening [ and skip whitespace
 
     if (i === len) {
-        throw new EvalError(`Encountered unexpected end of input while parsing an array starting at ${index}!`);
+        throw new SyntaxError(`Encountered unexpected end of input while parsing an array starting at ${index}!`);
     }
 
     if (source.charAt(i) === ",") {
-        throw new EvalError(`Invalid leading comma in array literal beginning at position ${index}!`);
+        throw new SyntaxError(`Invalid leading comma in array literal beginning at position ${index}!`);
     }
 
     let expectAnotherChild = false;
 
     while (true) {
         if (i === len) {
-            throw new EvalError(`Encountered unexpected end of input while parsing an array starting at ${index}!`);
+            throw new SyntaxError(`Encountered unexpected end of input while parsing an array starting at ${index}!`);
         }
 
         if (source.charAt(i) === ']') {
             if (!expectAnotherChild) {
                 break; // end of array
             } else {
-                throw new EvalError(`Invalid trailing comma in array literal beginning at position ${index}!`);
+                throw new SyntaxError(`Invalid trailing comma in array literal beginning at position ${index}!`);
             }
         }
 
@@ -368,7 +368,7 @@ function getArrayNode(source: string, index: number): [ArrayNode, number] {
         i = skipUpToNonWhitespace(source, advancedTo);
 
         if (i === len) {
-            throw new EvalError(`Encountered unexpected end of input while parsing an array starting at ${index}!`);
+            throw new SyntaxError(`Encountered unexpected end of input while parsing an array starting at ${index}!`);
         }
 
         // step over comma and any subsequent whitespace and set the flag to expect another child
@@ -376,7 +376,7 @@ function getArrayNode(source: string, index: number): [ArrayNode, number] {
             expectAnotherChild = true;
             i = skipUpToNonWhitespace(source, i + 1);
         } else if (source.charAt(i) !== "]") {
-            throw new EvalError(`Encountered unexpected character while parsing array element at position ${i}!`);
+            throw new SyntaxError(`Encountered unexpected character while parsing array element at position ${i}!`);
         }
     }
 
@@ -392,33 +392,33 @@ function getObjectNode(source: string, index: number): [ObjectNode, number] {
     let i = skipUpToNonWhitespace(source, index + 1); // step over opening { and skip whitespace
 
     if (i === len) {
-        throw new EvalError(`Encountered unexpected end of input while parsing object literal starting at ${index}!`);
+        throw new SyntaxError(`Encountered unexpected end of input while parsing object literal starting at ${index}!`);
     }
 
     let expectAnotherEntry = false;
 
     while (true) {
         if (i === len) {
-            throw new EvalError(`Encountered unexpected end of input while parsing object literal starting at ${index}!`);
+            throw new SyntaxError(`Encountered unexpected end of input while parsing object literal starting at ${index}!`);
         }
 
         if (source.charAt(i) === '}') {
             if (!expectAnotherEntry) {
                 break; // end of object
             } else {
-                throw new EvalError(`Invalid trailing comma in object literal beginning at position ${index}!`);
+                throw new SyntaxError(`Invalid trailing comma in object literal beginning at position ${index}!`);
             }
         }
 
         if (source.charAt(i) !== "\"") {
-            throw new EvalError(`Unable to parse key string in object literal at position ${i}!`);
+            throw new SyntaxError(`Unable to parse key string in object literal at position ${i}!`);
         }
 
         const [keyNode, advancedTo] = getStringNode(source, i);
         i = skipUpToNonWhitespace(source, advancedTo);
 
         if (i === len || source.charAt(i) !== ":") {
-            throw new EvalError(`Unable to parse value string in object literal at position ${i}!`);
+            throw new SyntaxError(`Unable to parse value string in object literal at position ${i}!`);
         }
 
         i = skipUpToNonWhitespace(source, i + 1); // step over key-value separator ':' and advance to value
@@ -427,7 +427,7 @@ function getObjectNode(source: string, index: number): [ObjectNode, number] {
         i = skipUpToNonWhitespace(source, advancedTo2);
 
         if (i === len) {
-            throw new EvalError(`Unexpected end of input while parsing object literal starting at ${index}!`);
+            throw new SyntaxError(`Unexpected end of input while parsing object literal starting at ${index}!`);
         }
 
         // step over comma and any subsequent whitespace and set the flag to expect another entry
