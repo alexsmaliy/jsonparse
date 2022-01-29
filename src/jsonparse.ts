@@ -360,6 +360,7 @@ function getArrayNode(source: string, index: number): [ArrayNode, number] {
         }
 
         const [node, advancedTo] = advanceOneNode(source, i);
+        children.push(node);
         expectAnotherChild = false;
         i = skipUpToNonWhitespace(source, advancedTo);
 
@@ -371,9 +372,9 @@ function getArrayNode(source: string, index: number): [ArrayNode, number] {
         if (source.charAt(i) === ",") {
             expectAnotherChild = true;
             i = skipUpToNonWhitespace(source, i + 1);
+        } else if (source.charAt(i) !== "]") {
+            throw new EvalError(`Encountered unexpected character while parsing array element at position ${i}!`);
         }
-
-        children.push(node);
     }
 
     // i ends up being the last *seen* character -- we indicate that first *unseen* character is i + 1
