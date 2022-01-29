@@ -258,6 +258,9 @@ function getNumberNode(source: string, index: number): [NumberNode, number] {
     const len = source.length;
     let leadingMinus = source.charAt(i) === "-";
 
+    let seenPoint = false;
+    let seenExp = false;
+
     if (leadingMinus) {
         i++;
         if (isTokenRightBoundary(source, i) || !isDigit(source, i)) {
@@ -267,12 +270,12 @@ function getNumberNode(source: string, index: number): [NumberNode, number] {
 
     // immediately check for invalid number with leading zeros
     if (i < len && source.charAt(i) === "0" && !isTokenRightBoundary(source, i + 1)) {
-        throw new EvalError(`Encountered unexpected leading zeros while parsing a number at position ${i}!`);
+        i++;
+        if (source.charAt(i) !== ".") {
+            throw new EvalError(`Encountered unexpected leading zeros while parsing a number at position ${i}!`);
+        }
     }
 
-
-    let seenPoint = false;
-    let seenExp = false;
     if (!leadingMinus) {
         i++; // step over first character, which is what already triggered this function
     }
