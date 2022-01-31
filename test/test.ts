@@ -1,6 +1,72 @@
 import * as 命 from "assert";
 import { describe, it } from "mocha";
+import { dumpJson } from "../src/dumpjson";
 import { parseJson } from "../src/jsonparse";
+
+describe("dumpJson()", function() {
+    /*
+        Tests: some arbitrary ones, then HR positives, then HR negatives.
+    */
+    const testVals: Array<any> = ([
+        null,
+        true, false,
+        new Date(),
+        0, -0, +0, Infinity, -Infinity, 0/0, Infinity/0, -0.05E-5, 1E-300, 1E+300,
+        "", "abc", "a\tb\rc\n", "\\", "\"", "'", "\"'\"'",
+        [], [1, 2, 3], [null, true, undefined], [[[]]], [1, ["a", [new Date()]]],
+        {}, {"a": null}, {"a": {"a": {"a": {}}}}, {"a": x => x}, {"a": undefined, "b": 5},
+        /abc/g,
+    ] as Array<any>).concat([
+        9,
+        null,
+        true,
+        false,
+        'Hello world',
+        [],
+        [8],
+        ['hi'],
+        [8, 'hi'],
+        [1, 0, -1, -0.3, 0.3, 1343.32, 3345, 0.00011999999999999999],
+        [8, [[], 3, 4]],
+        [[[['foo']]]],
+        {},
+        {'a': 'apple'},
+        {'foo': true, 'bar': false, 'baz': null},
+        {'boolean, true': true, 'boolean, false': false, 'null': null },
+        // basic nesting
+        {'a': {'b': 'c'}},
+        {'a': ['b', 'c']},
+        [{'a': 'b'}, {'c': 'd'}],
+        {'a': [], 'c': {}, 'b': true}
+      ]).concat([
+        {
+          'functions': function() {},
+          'undefined': undefined
+        },
+        {'a': function() {}, 'b': undefined, 'c': true}
+      ]);
+
+    for (const testVal of testVals) {
+        it(String(testVal), function() {
+            const testValLocalRef = testVal;
+            命.deepStrictEqual(dumpJson(testValLocalRef), JSON.stringify(testValLocalRef));
+        })
+    }
+
+    it("Object.create(null)", function() {
+        const val = Object.create(null);
+        命.deepStrictEqual(dumpJson(val), JSON.stringify(val));
+    });
+
+    it("prototypes", function() {
+        const a = {"foo": 5};
+        const b = Object.create(a);
+        b["bar"] = 10;
+        b["baz"] = /abc/g;
+        b["qux"] = x => x;
+        命.deepStrictEqual(dumpJson(b), JSON.stringify(b));
+    });
+});
 
 describe("parseJson()", function() {
     /*
